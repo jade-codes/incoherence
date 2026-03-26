@@ -1,0 +1,102 @@
+# Hull & East Riding city configuration
+# This file drives the entire incoherence detector for this city/region.
+
+[city]
+name = "Hull & East Riding"
+slug = "hull"
+db = "data/hull.db"
+
+# --- Entities (councils/institutions being tracked) ---
+
+[[entities]]
+id = "hull-cc"
+name = "Hull City Council"
+source_key = "hull_cc"
+kind = "local_authority"
+ons_code = "E06000010"
+
+[entities.news]
+url = "https://news.hull.gov.uk"
+# URL pattern containing dates like /DD/MM/YYYY/
+date_pattern = '(\d{2})/(\d{2})/(\d{4})/'
+
+[entities.minutes]
+index_url = "https://www.hull.gov.uk/council/meetings"
+base_url = "https://www.hull.gov.uk"
+committees = [
+    "https://www.hull.gov.uk/council/meetings/cabinet",
+    "https://www.hull.gov.uk/council/meetings/full-council",
+    "https://www.hull.gov.uk/council/meetings/health-and-wellbeing-board",
+    "https://www.hull.gov.uk/council/meetings/planning-committee",
+    "https://www.hull.gov.uk/council/meetings/scrutiny",
+]
+
+[entities.jsna]
+sections = [
+    "https://www.hulljsna.com/population/",
+    "https://www.hulljsna.com/health-and-wellbeing-influences/",
+    "https://www.hulljsna.com/vulnerable-groups/",
+    "https://www.hulljsna.com/home/key-facts-for-hull/",
+]
+
+[entities.wdtk]
+slug = "hull_city_council"
+
+[[entities]]
+id = "east-riding"
+name = "East Riding of Yorkshire Council"
+source_key = "east_riding"
+kind = "local_authority"
+ons_code = "E06000011"
+
+[entities.news]
+url = "https://www.eastriding.gov.uk/news"
+base_url = "https://www.eastriding.gov.uk"
+# East Riding uses /news/article/ pattern
+article_pattern = "/news/article/"
+
+[entities.jsna]
+sections = [
+    "https://eastridingjsna.com/",
+]
+
+[entities.wdtk]
+slug = "east_riding_of_yorkshire_council"
+
+# --- Police ---
+
+[police]
+force = "humberside"
+
+[[police.areas]]
+name = "Hull"
+entity_id = "hull-cc"
+lat = 53.7457
+lng = -0.3367
+
+[[police.areas]]
+name = "East Riding"
+entity_id = "east-riding"
+lat = 53.8430
+lng = -0.4270
+
+# --- Rate limiting (seconds between requests per domain) ---
+
+[rate_limits]
+"www.hull.gov.uk" = 3.0
+"news.hull.gov.uk" = 3.0
+"www.eastriding.gov.uk" = 3.0
+"www.hulljsna.com" = 3.0
+"eastridingjsna.com" = 3.0
+"www.nomisweb.co.uk" = 1.0
+"data.gov.uk" = 1.0
+
+# --- Chat examples (shown in the web UI) ---
+
+[chat]
+examples = [
+    "Worst housing contradictions",
+    "Health outcomes for Hull",
+    "Climate claims",
+    "Poverty in East Riding",
+]

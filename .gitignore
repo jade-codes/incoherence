@@ -1,0 +1,25 @@
+# Rust
+target/
+Cargo.lock
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Data
+data/raw/
+data/embeddings/
+data/reports/
+
+# Data (derived)
+data/hull.db
+data/scraped/
+data/processed/
+
+# Firebase
+.firebase/
+
+# Environment
+.env

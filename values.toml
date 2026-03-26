@@ -1,0 +1,178 @@
+# Hull & East Riding Institutional Value Taxonomy
+# Used by GoT coherence analysis to detect contradictions between
+# stated institutional values and observed outcomes.
+
+[meta]
+region = "Hull & East Riding of Yorkshire"
+period = "2015-2025"
+version = 1
+
+# --- Welfare cluster ---
+
+[[values]]
+name = "housing-priority"
+description = "Prioritising affordable housing provision and reducing homelessness"
+cluster = "welfare"
+antonyms = ["housing-neglect"]
+
+[[values]]
+name = "housing-neglect"
+description = "Allowing housing conditions to deteriorate, homelessness to rise, and social housing stock to shrink"
+cluster = "welfare"
+antonyms = ["housing-priority"]
+
+[[values]]
+name = "health-investment"
+description = "Investing in public health services and reducing health inequalities"
+cluster = "welfare"
+antonyms = ["health-austerity"]
+
+[[values]]
+name = "health-austerity"
+description = "Cutting health and social care budgets despite growing need and worsening outcomes"
+cluster = "welfare"
+antonyms = ["health-investment"]
+
+[[values]]
+name = "poverty-reduction"
+description = "Actively working to reduce child poverty, fuel poverty, and deprivation"
+cluster = "welfare"
+antonyms = ["poverty-indifference"]
+
+[[values]]
+name = "poverty-indifference"
+description = "Allowing poverty indicators to worsen while claiming regeneration success"
+cluster = "welfare"
+antonyms = ["poverty-reduction"]
+
+# --- Governance cluster ---
+
+[[values]]
+name = "transparency"
+description = "Making council decisions, spending, and contracts openly accountable to the public"
+cluster = "governance"
+antonyms = ["opacity"]
+
+[[values]]
+name = "opacity"
+description = "Hiding decision-making processes, spending, and outsourcing from public scrutiny"
+cluster = "governance"
+antonyms = ["transparency"]
+
+[[values]]
+name = "fiscal-responsibility"
+description = "Spending public money prudently and delivering value for taxpayers"
+cluster = "governance"
+antonyms = ["fiscal-waste"]
+
+[[values]]
+name = "fiscal-waste"
+description = "Wasteful spending on vanity projects while core services decline"
+cluster = "governance"
+antonyms = ["fiscal-responsibility"]
+
+# --- Democracy cluster ---
+
+[[values]]
+name = "community-voice"
+description = "Genuinely listening to and acting on community input in planning and policy decisions"
+cluster = "democracy"
+antonyms = ["tokenism"]
+
+[[values]]
+name = "tokenism"
+description = "Conducting consultations with predetermined outcomes and no intention of changing plans"
+cluster = "democracy"
+antonyms = ["community-voice"]
+
+[[values]]
+name = "democratic-accountability"
+description = "Elected officials being answerable for their decisions and voting records"
+cluster = "democracy"
+antonyms = ["democratic-deficit"]
+
+[[values]]
+name = "democratic-deficit"
+description = "Decisions made by unelected bodies, devolution deals without mandate, or rubber-stamping"
+cluster = "democracy"
+antonyms = ["democratic-accountability"]
+
+# --- Development cluster ---
+
+[[values]]
+name = "genuine-regeneration"
+description = "Improving deprived areas for existing residents with lasting economic benefit"
+cluster = "development"
+antonyms = ["displacement"]
+
+[[values]]
+name = "displacement"
+description = "Development that pushes existing residents out or primarily benefits outside investors"
+cluster = "development"
+antonyms = ["genuine-regeneration"]
+
+[[values]]
+name = "sustainable-growth"
+description = "Economic development that creates lasting local jobs and respects environmental limits"
+cluster = "development"
+antonyms = ["short-termism"]
+
+[[values]]
+name = "short-termism"
+description = "Chasing headline projects and temporary employment at the expense of long-term resilience"
+cluster = "development"
+antonyms = ["sustainable-growth"]
+
+# --- Environment cluster ---
+
+[[values]]
+name = "climate-action"
+description = "Meeting declared climate emergency commitments and reducing carbon emissions"
+cluster = "environment"
+antonyms = ["climate-inaction"]
+
+[[values]]
+name = "climate-inaction"
+description = "Declaring climate emergency while approving carbon-intensive projects and road building"
+cluster = "environment"
+antonyms = ["climate-action"]
+
+[[values]]
+name = "flood-protection"
+description = "Investing in flood defences and resilient infrastructure for at-risk communities"
+cluster = "environment"
+antonyms = ["flood-neglect"]
+
+[[values]]
+name = "flood-neglect"
+description = "Underfunding flood defences and building on floodplains despite known risks"
+cluster = "environment"
+antonyms = ["flood-protection"]
+
+# --- Education & Youth cluster ---
+
+[[values]]
+name = "education-investment"
+description = "Investing in schools, skills training, and young people's opportunities"
+cluster = "education"
+antonyms = ["education-neglect"]
+
+[[values]]
+name = "education-neglect"
+description = "Allowing educational outcomes to fall behind national averages and closing youth services"
+cluster = "education"
+antonyms = ["education-investment"]
+
+# --- Transport cluster ---
+
+[[values]]
+name = "transport-connectivity"
+description = "Improving public transport, cycling infrastructure, and reducing car dependency"
+cluster = "transport"
+antonyms = ["transport-isolation"]
+
+[[values]]
+name = "transport-isolation"
+description = "Cutting bus routes, failing to invest in rail, and prioritising road schemes"
+cluster = "transport"
+antonyms = ["transport-connectivity"]

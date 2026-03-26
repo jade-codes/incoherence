@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incoherence Detector</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1 id="site-title">Incoherence Detector</h1>
+        <p class="subtitle">Institutional accountability through geometric trust</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="graph">Knowledge Graph</button>
+        <button class="tab" data-tab="timeline">Timeline</button>
+        <button class="tab" data-tab="coherence">Coherence</button>
+        <button class="tab" data-tab="contradictions">Contradictions</button>
+    </nav>
+
+    <div class="layout">
+        <main>
+            <section id="tab-graph" class="tab-content active">
+                <h2>Causal Knowledge Graph</h2>
+                <div id="knowledge-graph" class="viz-container"></div>
+            </section>
+
+            <section id="tab-timeline" class="tab-content">
+                <h2>Claims vs Outcomes Timeline</h2>
+                <div class="controls">
+                    <select id="timeline-topic">
+                        <option value="all">All topics</option>
+                        <option value="housing">Housing</option>
+                        <option value="health">Health</option>
+                        <option value="poverty">Poverty</option>
+                        <option value="transparency">Transparency</option>
+                        <option value="regeneration">Regeneration</option>
+                        <option value="climate">Climate</option>
+                        <option value="education">Education</option>
+                        <option value="transport">Transport</option>
+                    </select>
+                </div>
+                <div id="timeline-chart" class="viz-container"></div>
+            </section>
+
+            <section id="tab-coherence" class="tab-content">
+                <h2>Coherence Score Over Time</h2>
+                <div id="coherence-chart" class="viz-container"></div>
+            </section>
+
+            <section id="tab-contradictions" class="tab-content">
+                <h2>Detected Contradictions</h2>
+                <div id="contradiction-panel"></div>
+            </section>
+        </main>
+
+        <aside class="chat-sidebar">
+            <div class="chat-header">Chat</div>
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-msg chat-system">
+                        Ask about the data:
+                        <ul id="chat-examples">
+                            <li>"Worst housing contradictions"</li>
+                            <li>"Health outcomes"</li>
+                            <li>"Climate claims"</li>
+                            <li>"Poverty data"</li>
+                        </ul>
+                    </div>
+                </div>
+                <form id="chat-form" class="chat-input-row">
+                    <input type="text" id="chat-input" placeholder="Ask a question..." autocomplete="off">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>Powered by <a href="https://github.com/jade-codes/got">Geometry of Trust</a></p>
+    </footer>
+
+    <script src="js/app.js" type="module"></script>
+</body>
+</html>
