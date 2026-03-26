@@ -8,9 +8,9 @@ import { renderCoherenceChart } from "./coherence-chart.js";
 import { renderContradictions } from "./contradiction-panel.js";
 import { initChat } from "./chat.js";
 
-// When served statically (e.g. Firebase Hosting), fetch pre-rendered JSON files.
-// When served by FastAPI, the server handles /api/* routes directly.
-const IS_STATIC = !window.__FASTAPI__;
+// Detect if we're served by FastAPI (live API) or static hosting (pre-rendered JSON).
+// Try the live endpoint first — if it 404s with .json-less URL, fall back to static.
+let IS_STATIC = null; // determined on first fetch
 const API_BASE = "/api";
 
 // Store loaded data globally so tabs can re-render
@@ -40,7 +40,15 @@ document.querySelectorAll(".tab").forEach((tab) => {
 });
 
 async function fetchJSON(path) {
-  // Strip query params for static mode and add .json extension
+  // Auto-detect live vs static on first call
+  if (IS_STATIC === null) {
+    try {
+      const probe = await fetch(`${API_BASE}/config`);
+      IS_STATIC = !probe.ok;
+    } catch {
+      IS_STATIC = true;
+    }
+  }
   const url = IS_STATIC
     ? `${API_BASE}${path.split("?")[0]}.json`
     : `${API_BASE}${path}`;

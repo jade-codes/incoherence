@@ -7,7 +7,19 @@
  */
 
 const API_BASE = "/api";
-const IS_STATIC = !window.__FASTAPI__;
+// Will be set by first fetchJSON call in app.js — default to null (auto-detect)
+let IS_STATIC = null;
+
+async function detectStatic() {
+  if (IS_STATIC !== null) return IS_STATIC;
+  try {
+    const probe = await fetch(`${API_BASE}/config`);
+    IS_STATIC = !probe.ok;
+  } catch {
+    IS_STATIC = true;
+  }
+  return IS_STATIC;
+}
 
 // Pre-loaded data for client-side search (static mode)
 let staticData = null;
@@ -33,7 +45,8 @@ const STOP_WORDS = new Set([
 
 async function loadStaticData() {
   if (staticData) return staticData;
-  const ext = IS_STATIC ? ".json" : "";
+  const isStatic = await detectStatic();
+  const ext = isStatic ? ".json" : "";
   const [timeline, contradictions] = await Promise.all([
     fetch(`${API_BASE}/timeline${ext}`).then((r) => r.json()),
     fetch(`${API_BASE}/contradictions${ext}`).then((r) => r.json()),
@@ -161,7 +174,7 @@ export function initChat() {
 
     try {
       let data;
-      if (IS_STATIC) {
+      if (await detectStatic()) {
         const loaded = await loadStaticData();
         data = clientSideSearch(query, loaded);
       } else {
