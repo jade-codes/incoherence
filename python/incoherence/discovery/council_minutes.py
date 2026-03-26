@@ -45,7 +45,7 @@ class CouncilMinutesFinder:
             soup = BeautifulSoup(resp.text, "html.parser")
             for link in soup.find_all("a", href=True):
                 href = link["href"]
-                if "/meetings/" in href and href not in committee_urls:
+                if self.minutes.link_pattern in href and href not in committee_urls:
                     if not href.startswith("http"):
                         href = self.minutes.base_url + href
                     committee_urls.append(href)

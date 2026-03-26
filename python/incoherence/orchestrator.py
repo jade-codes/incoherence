@@ -65,43 +65,60 @@ class Pipeline:
         self.max_pages = max_pages
 
     def _build_discoverers(self, sources: list[str] | None = None):
-        """Build discoverer instances from the city config."""
+        """Build discoverer instances based on what's actually configured.
+
+        Only enables a discoverer if the city config provides the data it needs.
+        Warns when a source is requested but not configured.
+        """
         discoverers = []
+        source_set = set(sources) if sources else None
+        city = self.city
+
+        def _wanted(key: str) -> bool:
+            return source_set is None or key in source_set
 
         # Per-entity discoverers (news, minutes)
-        for entity in self.city.entities:
-            if sources and entity.source_key not in sources:
+        for entity in city.entities:
+            if source_set and entity.source_key not in source_set:
                 continue
             if entity.news:
                 discoverers.append(CouncilNewsFinder(entity, rate_limiter=self.limiter))
             if entity.minutes:
                 discoverers.append(CouncilMinutesFinder(entity, rate_limiter=self.limiter))
 
-        # City-wide discoverers
-        source_set = set(sources) if sources else None
+        # JSNA — only if at least one entity has JSNA sections configured
+        if _wanted("jsna") and city.has_jsna:
+            discoverers.append(JsnaFinder(city, rate_limiter=self.limiter))
+        elif source_set and "jsna" in source_set and not city.has_jsna:
+            log.warning("Source 'jsna' requested but no JSNA sections configured")
 
-        if not source_set or "jsna" in source_set or any(
-            e.jsna for e in self.city.entities if not source_set or e.source_key in source_set
-        ):
-            discoverers.append(JsnaFinder(self.city, rate_limiter=self.limiter))
+        # NOMIS, Fingertips, LG Inform — need ONS codes
+        for key, cls in [("nomis", NomisFinder), ("fingertips", FingertipsFinder), ("lginform", LgInformFinder)]:
+            if _wanted(key) and city.has_ons:
+                discoverers.append(cls(city, rate_limiter=self.limiter))
+            elif source_set and key in source_set and not city.has_ons:
+                log.warning("Source '%s' requested but no ONS codes configured", key)
 
-        if not source_set or "nomis" in source_set:
-            discoverers.append(NomisFinder(self.city, rate_limiter=self.limiter))
+        # FOI (WhatDoTheyKnow) — need WDTK slugs
+        if _wanted("foi") and city.has_wdtk:
+            discoverers.append(WdtkFinder(city, rate_limiter=self.limiter))
+        elif source_set and "foi" in source_set and not city.has_wdtk:
+            log.warning("Source 'foi' requested but no WDTK slugs configured")
 
-        if not source_set or "fingertips" in source_set:
-            discoverers.append(FingertipsFinder(self.city, rate_limiter=self.limiter))
+        # Police — need police areas with coordinates
+        if _wanted("police") and city.has_police:
+            discoverers.append(PoliceFinder(city, rate_limiter=self.limiter))
+        elif source_set and "police" in source_set and not city.has_police:
+            log.warning("Source 'police' requested but no police areas configured")
 
-        if not source_set or "foi" in source_set:
-            discoverers.append(WdtkFinder(self.city, rate_limiter=self.limiter))
+        # Housing — national stats, just need ONS codes for extraction
+        if _wanted("housing") and city.has_ons:
+            discoverers.append(HousingStatsFinder(city, rate_limiter=self.limiter))
+        elif source_set and "housing" in source_set and not city.has_ons:
+            log.warning("Source 'housing' requested but no ONS codes configured")
 
-        if not source_set or "police" in source_set:
-            discoverers.append(PoliceFinder(self.city, rate_limiter=self.limiter))
-
-        if not source_set or "housing" in source_set:
-            discoverers.append(HousingStatsFinder(self.city, rate_limiter=self.limiter))
-
-        if not source_set or "lginform" in source_set:
-            discoverers.append(LgInformFinder(self.city, rate_limiter=self.limiter))
+        if not discoverers:
+            log.warning("No discoverers enabled — check your city config")
 
         return discoverers
 

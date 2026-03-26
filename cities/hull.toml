@@ -17,12 +17,13 @@ ons_code = "E06000010"
 
 [entities.news]
 url = "https://news.hull.gov.uk"
-# URL pattern containing dates like /DD/MM/YYYY/
 date_pattern = '(\d{2})/(\d{2})/(\d{4})/'
+pagination = "path"  # WordPress-style /page/2/
 
 [entities.minutes]
 index_url = "https://www.hull.gov.uk/council/meetings"
 base_url = "https://www.hull.gov.uk"
+link_pattern = "/meetings/"
 committees = [
     "https://www.hull.gov.uk/council/meetings/cabinet",
     "https://www.hull.gov.uk/council/meetings/full-council",
@@ -52,8 +53,8 @@ ons_code = "E06000011"
 [entities.news]
 url = "https://www.eastriding.gov.uk/news"
 base_url = "https://www.eastriding.gov.uk"
-# East Riding uses /news/article/ pattern
 article_pattern = "/news/article/"
+pagination = "query"  # ?page=2 style
 
 [entities.jsna]
 sections = [

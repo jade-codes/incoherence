@@ -85,7 +85,7 @@ class LgInformFinder:
                     api_url = (
                         f"https://lginform.local.gov.uk/reports/lgastandard"
                         f"?mod-metric={metric_id}&mod-area={entity.ons_code}"
-                        f"&mod-group=AllUnitaryLaInCountry_England"
+                        f"&mod-group={entity.lginform_group}"
                         f"&mod-type=namedComparisonGroup"
                     )
 

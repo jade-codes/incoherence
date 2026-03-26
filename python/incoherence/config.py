@@ -27,6 +27,8 @@ class NewsConfig:
     base_url: str | None = None
     date_pattern: str | None = None
     article_pattern: str | None = None
+    # "path" = /page/2/, "query" = ?page=2
+    pagination: str = "path"
 
 
 @dataclass
@@ -34,6 +36,8 @@ class MinutesConfig:
     index_url: str
     base_url: str
     committees: list[str] = field(default_factory=list)
+    # URL path segment that identifies committee/meeting links
+    link_pattern: str = "/meetings/"
 
 
 @dataclass
@@ -53,6 +57,8 @@ class EntityConfig:
     source_key: str
     kind: str
     ons_code: str | None = None
+    # LG Inform comparison group (default works for unitary authorities)
+    lginform_group: str = "AllUnitaryLaInCountry_England"
     news: NewsConfig | None = None
     minutes: MinutesConfig | None = None
     jsna: JsnaConfig | None = None
@@ -113,13 +119,39 @@ class CityConfig:
         return {e.source_key: e.ons_code for e in self.entities if e.ons_code}
 
     @property
+    def has_jsna(self) -> bool:
+        return any(e.jsna and e.jsna.sections for e in self.entities)
+
+    @property
+    def has_ons(self) -> bool:
+        """True if any entity has an ONS code (needed for NOMIS/Fingertips/LG Inform)."""
+        return any(e.ons_code for e in self.entities)
+
+    @property
+    def has_police(self) -> bool:
+        return bool(self.police and self.police.areas)
+
+    @property
+    def has_wdtk(self) -> bool:
+        return any(e.wdtk for e in self.entities)
+
+    @property
     def valid_sources(self) -> list[str]:
-        """All valid --source choices for the CLI."""
+        """All valid --source choices for the CLI, based on what's configured."""
         sources = list(self.source_keys)
-        # Add non-entity sources that are always available
-        for s in ["jsna", "nomis", "fingertips", "foi", "police", "housing", "lginform"]:
-            if s not in sources:
-                sources.append(s)
+        if self.has_jsna and "jsna" not in sources:
+            sources.append("jsna")
+        if self.has_ons:
+            for s in ["nomis", "fingertips", "lginform"]:
+                if s not in sources:
+                    sources.append(s)
+        if self.has_wdtk and "foi" not in sources:
+            sources.append("foi")
+        if self.has_police and "police" not in sources:
+            sources.append("police")
+        # Housing stats are national — always available for English LAs
+        if self.has_ons and "housing" not in sources:
+            sources.append("housing")
         return sources
 
     @property
@@ -141,6 +173,7 @@ def _parse_entity(raw: dict) -> EntityConfig:
             base_url=n.get("base_url"),
             date_pattern=n.get("date_pattern"),
             article_pattern=n.get("article_pattern"),
+            pagination=n.get("pagination", "path"),
         )
 
     minutes = None
@@ -150,6 +183,7 @@ def _parse_entity(raw: dict) -> EntityConfig:
             index_url=m["index_url"],
             base_url=m["base_url"],
             committees=m.get("committees", []),
+            link_pattern=m.get("link_pattern", "/meetings/"),
         )
 
     jsna = None
@@ -167,6 +201,7 @@ def _parse_entity(raw: dict) -> EntityConfig:
         source_key=raw["source_key"],
         kind=raw.get("kind", "local_authority"),
         ons_code=raw.get("ons_code"),
+        lginform_group=raw.get("lginform_group", "AllUnitaryLaInCountry_England"),
         news=news,
         minutes=minutes,
         jsna=jsna,

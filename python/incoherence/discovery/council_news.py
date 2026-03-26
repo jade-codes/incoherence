@@ -104,19 +104,14 @@ class CouncilNewsFinder:
         return results
 
     def _page_url(self, page: int) -> str:
-        """Build the URL for a given page number."""
+        """Build the URL for a given page number, using config pagination style."""
         base = self.news.url.rstrip("/")
         if page == 1:
             return base
-        # Try common pagination patterns
         if "?" in base:
             return f"{base}&page={page}"
-        # WordPress-style /page/N/ or ?page=N
-        if any(d in base for d in ["wordpress", "news.hull", ".gov.uk/news"]):
-            pass
-        # Default: try both patterns, prefer the one that matches the site
-        if self.news.article_pattern:
-            # Sites like eastriding use ?page=N
+        # Use configured pagination style: "path" = /page/2/, "query" = ?page=2
+        if self.news.pagination == "query":
             return f"{base}/?page={page}"
         return f"{base}/page/{page}/"
 
