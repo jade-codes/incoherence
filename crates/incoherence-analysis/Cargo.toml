@@ -1,8 +1,8 @@
 [package]
-name = "hull-analysis"
+name = "incoherence-analysis"
 version = "0.1.0"
 edition = "2021"
-description = "Institutional incoherence detector for Hull & East Riding using Geometry of Trust"
+description = "Institutional incoherence detector using Geometry of Trust"
 
 [dependencies]
 got-core = { git = "https://github.com/jade-codes/got" }
