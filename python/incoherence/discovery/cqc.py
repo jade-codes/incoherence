@@ -1,12 +1,14 @@
 """Discover care quality data from the CQC API.
 
 The Care Quality Commission rates care homes, hospitals, GP practices,
-and social care services. Free API, no key needed.
+and social care services. Requires a free subscription key from
+https://api.service.cqc.org.uk/ (set CQC_API_KEY env var).
 """
 
 from __future__ import annotations
 
 import logging
+import os
 
 import httpx
 
@@ -16,7 +18,7 @@ from . import DiscoveredURL
 
 log = logging.getLogger(__name__)
 
-CQC_API = "https://api.cqc.org.uk/public/v1"
+CQC_API = "https://api.service.cqc.org.uk/public/v1"
 
 
 class CqcFinder:
@@ -24,13 +26,22 @@ class CqcFinder:
 
     def __init__(self, city: CityConfig, rate_limiter: DomainRateLimiter | None = None):
         self.city = city
+        self.api_key = os.environ.get("CQC_API_KEY")
         self.limiter = rate_limiter or DomainRateLimiter()
+        headers = {"User-Agent": "IncoherenceDetector/0.1 (research)"}
+        if self.api_key:
+            headers["Ocp-Apim-Subscription-Key"] = self.api_key
         self.client = httpx.Client(
             timeout=30.0,
             follow_redirects=True,
+            headers=headers,
         )
 
     def discover(self, max_pages: int = 10) -> list[DiscoveredURL]:
+        if not self.api_key:
+            log.info("No CQC_API_KEY set — skipping CQC discovery")
+            return []
+
         results: list[DiscoveredURL] = []
 
         for entity in self.city.entities:
