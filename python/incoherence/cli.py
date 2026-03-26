@@ -217,8 +217,14 @@ def cmd_review(args: argparse.Namespace) -> None:
 
 
 def cmd_promote(args: argparse.Namespace) -> None:
-    """Promote accepted candidates into the claims/outcomes tables."""
+    """Promote accepted candidates into the claims/outcomes tables.
+
+    Performs semantic deduplication: skips candidates that are too similar
+    (cosine > 0.9) to an existing claim or outcome on the same topic.
+    """
+    import math
     import sqlite3
+    import struct
     import uuid as uuid_mod
     from datetime import date as date_cls
 
@@ -240,8 +246,45 @@ def cmd_promote(args: argparse.Namespace) -> None:
         conn.close()
         return
 
+    # Load existing embeddings for dedup comparison
+    def _blob_to_list(blob):
+        if not blob:
+            return None
+        n = len(blob) // 4
+        return list(struct.unpack(f"{n}f", blob))
+
+    def _cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        na = math.sqrt(sum(x * x for x in a))
+        nb = math.sqrt(sum(x * x for x in b))
+        if na == 0 or nb == 0:
+            return 0.0
+        return dot / (na * nb)
+
+    # Load embedding model for candidate texts
+    try:
+        from .extraction.embeddings import EmbeddingModel
+        model = EmbeddingModel()
+    except ImportError:
+        model = None
+
+    # Pre-load existing embeddings by topic
+    existing_embeddings: dict[str, list[tuple[str, list[float]]]] = {}
+    for table in ["claims", "outcomes"]:
+        text_col = "paraphrased" if table == "claims" else "description"
+        db_rows = conn.execute(
+            f"SELECT topic, embedding FROM {table} WHERE embedding IS NOT NULL"
+        ).fetchall()
+        for r in db_rows:
+            topic = r["topic"]
+            emb = _blob_to_list(r["embedding"])
+            if emb:
+                existing_embeddings.setdefault(topic, []).append(emb)
+
+    DEDUP_THRESHOLD = 0.9
     n_claims = 0
     n_outcomes = 0
+    n_skipped = 0
 
     for row in rows:
         entity_id = entity_map.get(row["source"])
@@ -251,6 +294,21 @@ def cmd_promote(args: argparse.Namespace) -> None:
             topic = Topic(topic_str) if topic_str else None
         except ValueError:
             topic = None
+
+        # Semantic dedup: check if this candidate is too similar to existing data
+        if model and topic_str and topic_str in existing_embeddings:
+            candidate_emb = model.embed(row["sentence"][:512])
+            is_duplicate = any(
+                _cosine(candidate_emb, existing_emb) > DEDUP_THRESHOLD
+                for existing_emb in existing_embeddings[topic_str]
+            )
+            if is_duplicate:
+                conn.execute(
+                    "UPDATE candidates SET status = 'duplicate' WHERE id = ?",
+                    (row["id"],),
+                )
+                n_skipped += 1
+                continue
 
         if row["kind"] == "claim" and entity_id and topic:
             from .graph.model import Claim
@@ -279,6 +337,10 @@ def cmd_promote(args: argparse.Namespace) -> None:
             ))
             n_outcomes += 1
 
+        else:
+            # Can't promote (missing topic or entity) — skip
+            continue
+
         conn.execute(
             "UPDATE candidates SET status = 'promoted' WHERE id = ?",
             (row["id"],),
@@ -287,6 +349,8 @@ def cmd_promote(args: argparse.Namespace) -> None:
     conn.commit()
     conn.close()
     print(f"Promoted {n_claims} claims and {n_outcomes} outcomes into the knowledge graph.")
+    if n_skipped:
+        print(f"Skipped {n_skipped} duplicates (cosine > {DEDUP_THRESHOLD})")
 
 
 def cmd_status(args: argparse.Namespace) -> None:

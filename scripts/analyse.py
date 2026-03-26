@@ -234,12 +234,12 @@ def main():
     store = GraphStore(conn)
 
     # Step 0: Classify outcomes using NLP (topic + direction)
-    # Only reclassify if outcomes haven't been classified yet
+    # Reclassify if any outcomes are missing topic OR direction
     unclassified = conn.execute(
-        "SELECT COUNT(*) FROM outcomes WHERE topic IS NULL OR topic = ''"
+        "SELECT COUNT(*) FROM outcomes WHERE topic IS NULL OR topic = '' OR direction IS NULL"
     ).fetchone()[0]
     if unclassified > 0 or "--reclassify" in sys.argv:
-        print("\n=== Step 0: NLP classification of outcomes ===")
+        print(f"\n=== Step 0: NLP classification of outcomes ({unclassified} need classification) ===")
         counts = classify_outcomes_in_db(conn)
         print(f"  Topics reclassified: {counts['topic_changed']}")
         print(f"  Directions reclassified: {counts['direction_changed']}")
