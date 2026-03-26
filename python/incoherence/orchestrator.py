@@ -12,12 +12,18 @@ from .dedup import DeduplicationTracker
 from .discovery import DiscoveredURL
 from .discovery.council_news import CouncilNewsFinder
 from .discovery.council_minutes import CouncilMinutesFinder
+from .discovery.cqc import CqcFinder
+from .discovery.environment_agency import EnvironmentAgencyFinder
 from .discovery.fingertips import FingertipsFinder
 from .discovery.housing import HousingStatsFinder
 from .discovery.jsna import JsnaFinder
+from .discovery.land_registry import LandRegistryFinder
 from .discovery.lginform import LgInformFinder
 from .discovery.nomis import NomisFinder
+from .discovery.oflog import OflogFinder
+from .discovery.planning import PlanningFinder
 from .discovery.police import PoliceFinder
+from .discovery.theyworkforyou import TheyWorkForYouFinder
 from .discovery.whatdotheyknow import WdtkFinder
 from .graph.model import SourceType, init_db
 from .graph.storage import GraphStore
@@ -36,8 +42,11 @@ SOURCE_TYPE_MAP = {
 }
 
 # Sources that produce claims vs outcomes
-CLAIM_DOC_TYPES = {"press_release", "minutes", "foi"}
-OUTCOME_DOC_TYPES = {"stats", "news_report", "police", "housing_stats"}
+CLAIM_DOC_TYPES = {"press_release", "minutes", "foi", "parliamentary"}
+OUTCOME_DOC_TYPES = {
+    "stats", "news_report", "police", "housing_stats",
+    "environment", "cqc", "oflog", "planning", "land_registry",
+}
 
 
 class Pipeline:
@@ -116,6 +125,30 @@ class Pipeline:
             discoverers.append(HousingStatsFinder(city, rate_limiter=self.limiter))
         elif source_set and "housing" in source_set and not city.has_ons:
             log.warning("Source 'housing' requested but no ONS codes configured")
+
+        # Environment Agency — needs police areas for coordinates
+        if _wanted("environment") and city.has_police:
+            discoverers.append(EnvironmentAgencyFinder(city, rate_limiter=self.limiter))
+
+        # CQC — needs ONS codes
+        if _wanted("cqc") and city.has_ons:
+            discoverers.append(CqcFinder(city, rate_limiter=self.limiter))
+
+        # Oflog — needs ONS codes
+        if _wanted("oflog") and city.has_ons:
+            discoverers.append(OflogFinder(city, rate_limiter=self.limiter))
+
+        # TheyWorkForYou — needs TWFY_API_KEY env var
+        if _wanted("parliamentary"):
+            discoverers.append(TheyWorkForYouFinder(city, rate_limiter=self.limiter))
+
+        # Planning applications — needs coordinates or entity names
+        if _wanted("planning"):
+            discoverers.append(PlanningFinder(city, rate_limiter=self.limiter))
+
+        # Land Registry — needs ONS codes
+        if _wanted("land_registry") and city.has_ons:
+            discoverers.append(LandRegistryFinder(city, rate_limiter=self.limiter))
 
         if not discoverers:
             log.warning("No discoverers enabled — check your city config")

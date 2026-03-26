@@ -139,19 +139,25 @@ class CityConfig:
     def valid_sources(self) -> list[str]:
         """All valid --source choices for the CLI, based on what's configured."""
         sources = list(self.source_keys)
-        if self.has_jsna and "jsna" not in sources:
-            sources.append("jsna")
+
+        def _add(key: str) -> None:
+            if key not in sources:
+                sources.append(key)
+
+        if self.has_jsna:
+            _add("jsna")
         if self.has_ons:
-            for s in ["nomis", "fingertips", "lginform"]:
-                if s not in sources:
-                    sources.append(s)
-        if self.has_wdtk and "foi" not in sources:
-            sources.append("foi")
-        if self.has_police and "police" not in sources:
-            sources.append("police")
-        # Housing stats are national — always available for English LAs
-        if self.has_ons and "housing" not in sources:
-            sources.append("housing")
+            for s in ["nomis", "fingertips", "lginform", "oflog", "cqc",
+                       "housing", "land_registry"]:
+                _add(s)
+        if self.has_wdtk:
+            _add("foi")
+        if self.has_police:
+            _add("police")
+            _add("environment")
+        # Always available (no special config needed)
+        _add("planning")
+        _add("parliamentary")
         return sources
 
     @property

@@ -111,11 +111,17 @@ All commands accept `--config <path>` to target a different city. Defaults to `c
 | Council news/press releases | Claims | No |
 | Council meeting minutes | Claims | No |
 | WhatDoTheyKnow FOI requests | Claims | No |
-| Hull/East Riding JSNA | Outcomes | No |
+| TheyWorkForYou (Hansard) | Claims | Yes (free) |
+| JSNA health assessments | Outcomes | No |
 | OHID Fingertips | Outcomes | No |
 | NOMIS labour market | Outcomes | No |
 | LG Inform metrics | Outcomes | No (optional key for higher limits) |
+| Oflog council performance | Outcomes | No |
 | Police UK crime data | Outcomes | No |
+| Environment Agency (flood/water) | Outcomes | No |
+| CQC care quality ratings | Outcomes | No |
+| PlanIt planning applications | Outcomes | No |
+| Land Registry house prices | Outcomes | No |
 | MHCLG housing statistics | Outcomes | No |
 
 ## Project structure
